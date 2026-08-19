@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /pilot-dashboard.html
+Disallow: /pilot-onboarding.html
+Disallow: /pilot-reset.html
+Disallow: /pilot-reset-confirm.html
+Disallow: /upload-mission.html
+
+Sitemap: https://sunlytics.bg/sitemap.xml
