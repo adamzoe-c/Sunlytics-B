@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to Sunlytics | Pilot Onboarding</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#f7971e">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --orange: #f7971e;
+  --orange-dark: #ff4e00;
+  --navy: #1a1a1a;
+  --gray: #6b7280;
+  --border: #e8e8e8;
+  --off: #f9f9f9;
+  --green: #16a34a;
+  --green-bg: #f0fdf4;
+  --green-border: #bbf7d0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--off);
+  color: var(--navy);
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5%; height: 64px;
+  background: #fff; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { text-decoration: none; }
+.logo-text { font-size: 18px; font-weight: 900; letter-spacing: 1.5px; background: linear-gradient(135deg, var(--orange), var(--orange-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.nav-skip { font-size: 13px; color: var(--gray); text-decoration: none; transition: color 0.2s; }
+.nav-right { display: flex; align-items: center; gap: 16px; }
+.lang-switcher { display: flex; align-items: center; gap: 4px; background: var(--off); border-radius: 10px; padding: 4px; }
+.lang-btn { display: flex; align-items: center; gap: 5px; background: none; border: none; border-radius: 7px; padding: 5px 9px; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--gray); font-family: inherit; transition: all 0.18s; letter-spacing: 0.4px; }
+.lang-btn img { width: 20px; height: 14px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.lang-btn:hover { color: var(--navy); background: white; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+.lang-btn.active { color: var(--orange-dark); background: white; box-shadow: 0 1px 8px rgba(247,151,30,0.2); }
+@media (max-width: 560px) {
+  .lang-btn { font-size: 11px; padding: 4px 7px; }
+  .lang-btn img { width: 18px; height: 12px; }
+}
+.nav-skip:hover { color: var(--orange); }
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, #fff8f0 0%, #fef3e2 100%);
+  padding: 60px 5% 70px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #fde8c3;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 60% 50%, rgba(247,151,30,0.08) 0%, transparent 70%);
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(247,151,30,0.15); color: var(--orange-dark);
+  border: 1px solid rgba(247,151,30,0.3);
+  padding: 6px 16px; border-radius: 50px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 20px; position: relative;
+}
+.hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 900; color: var(--navy); line-height: 1.1; margin-bottom: 14px; position: relative; }
+.hero h1 span { background: linear-gradient(135deg, var(--orange), var(--orange-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { font-size: 16px; color: var(--gray); max-width: 520px; margin: 0 auto; line-height: 1.7; position: relative; }
+.pilot-name { color: var(--orange); font-weight: 700; }
+
+/* PROGRESS BAR */
+.progress-wrap {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 20px 5%;
+}
+.progress-steps {
+  display: flex; align-items: flex-start; justify-content: center; gap: 0;
+  max-width: 600px; margin: 0 auto;
+}
+.prog-step {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  flex: 1; position: relative; cursor: pointer; min-width: 0;
+}
+.prog-step:not(:last-child)::after {
+  content: '';
+  position: absolute; top: 16px; left: 50%; width: 100%; height: 2px;
+  background: var(--border); z-index: 0;
+}
+.prog-step.done:not(:last-child)::after,
+.prog-step.active:not(:last-child)::after { background: var(--orange); }
+.prog-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border); background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #ccc;
+  position: relative; z-index: 1; transition: all 0.3s; flex-shrink: 0;
+}
+.prog-step.done .prog-dot { background: var(--green); border-color: var(--green); color: #fff; }
+.prog-step.active .prog-dot { background: linear-gradient(135deg, var(--orange), var(--orange-dark)); border-color: transparent; color: #fff; box-shadow: 0 3px 10px rgba(247,151,30,0.4); }
+.prog-label {
+  font-size: 10px; font-weight: 600; color: #ccc;
+  white-space: normal; text-align: center;
+  word-break: break-word; line-height: 1.3;
+  padding: 0 2px;
+}
+.prog-step.done .prog-label,
+.prog-step.active .prog-label { color: var(--navy); }
+
+/* MAIN */
+main { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+
+.step-section { display: none; }
+.step-section.active { display: block; }
+
+.card {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 20px; padding: 32px; margin-bottom: 16px;
+}
+.card h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+.card p { font-size: 14px; color: var(--gray); line-height: 1.7; margin-bottom: 18px; }
+.card p:last-child { margin-bottom: 0; }
+
+/* CHECKLIST */
+.checklist { display: flex; flex-direction: column; gap: 12px; }
+.check-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 12px;
+  border: 2px solid var(--border); background: #fff;
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.check-item:hover { border-color: var(--orange); background: #fef9f0; }
+.check-item.checked { border-color: var(--green); background: var(--green-bg); }
+.check-box {
+  width: 22px; height: 22px; flex-shrink: 0; border-radius: 6px;
+  border: 2px solid var(--border); background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.check-item.checked .check-box { background: var(--green); border-color: var(--green); }
+.check-label { font-size: 14px; font-weight: 600; flex: 1; }
+.check-item.checked .check-label { color: var(--green); text-decoration: line-through; opacity: 0.7; }
+.check-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+
+/* INFO BOXES */
+.info-box {
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 14px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.info-box.orange { background: #fff8f0; border: 1px solid #fde8c3; }
+.info-box.green  { background: var(--green-bg); border: 1px solid var(--green-border); }
+.info-box.blue   { background: #eff6ff; border: 1px solid #bfdbfe; }
+.info-box-icon { flex-shrink: 0; margin-top: 2px; }
+.info-box-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.info-box.orange .info-box-title { color: #c2410c; }
+.info-box.green  .info-box-title { color: var(--green); }
+.info-box.blue   .info-box-title { color: #1d4ed8; }
+.info-box p { font-size: 13px; color: var(--gray); line-height: 1.6; margin: 0; }
+
+/* STEPS LIST */
+.how-steps { display: flex; flex-direction: column; gap: 20px; }
+.how-step { display: flex; gap: 16px; align-items: flex-start; }
+.how-num {
+  width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  color: #fff; font-size: 14px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.how-body h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.how-body p { font-size: 13px; color: var(--gray); line-height: 1.6; margin: 0; }
+
+/* EARNINGS CARDS */
+.earn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+.earn-card { background: var(--off); border: 1px solid var(--border); border-radius: 14px; padding: 18px 14px; text-align: center; }
+.earn-num { font-size: 26px; font-weight: 900; background: linear-gradient(135deg, var(--orange), var(--orange-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.earn-label { font-size: 11px; color: var(--gray); margin-top: 4px; font-weight: 600; }
+
+/* PROFILE FORM */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.form-group input, .form-group select {
+  width: 100%; padding: 12px 16px;
+  border: 2px solid var(--border); border-radius: 12px;
+  font-size: 14px; font-family: inherit; outline: none; background: #fff;
+  transition: border-color 0.2s; color: var(--navy);
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--orange); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* BUTTONS */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  color: #fff; padding: 14px 28px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; border: none; cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 6px 20px rgba(247,151,30,0.3);
+  transition: transform 0.2s, box-shadow 0.2s; text-decoration: none;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(247,151,30,0.4); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--gray);
+  padding: 14px 28px; border-radius: 12px;
+  font-size: 15px; font-weight: 600; border: 2px solid var(--border);
+  cursor: pointer; font-family: inherit; transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+.btn-row { display: flex; gap: 12px; align-items: center; margin-top: 24px; flex-wrap: wrap; }
+
+/* SUCCESS */
+.success-wrap {
+  text-align: center; padding: 40px 20px;
+}
+.success-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  box-shadow: 0 8px 28px rgba(34,197,94,0.35);
+}
+.success-wrap h2 { font-size: 26px; font-weight: 900; margin-bottom: 10px; }
+.success-wrap p { font-size: 15px; color: var(--gray); max-width: 420px; margin: 0 auto 28px; line-height: 1.7; }
+
+/* FOOTER */
+footer {
+  text-align: center; padding: 20px;
+  font-size: 12px; color: var(--gray);
+  border-top: 1px solid var(--border); background: #fff;
+}
+footer a { color: var(--orange-dark); text-decoration: none; margin: 0 6px; }
+
+@media (max-width: 500px) {
+  .earn-grid { grid-template-columns: repeat(3, 1fr); }
+  .form-row { grid-template-columns: 1fr; }
+  .card { padding: 22px 18px; }
+  main { padding: 24px 14px 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo"><span class="logo-text">SUNLYTICS</span></a>
+  <div class="nav-right">
+    <div class="lang-switcher" role="group" aria-label="Language switcher">
+      <button class="lang-btn active" id="langEN" onclick="setLang('en')" aria-label="Switch to English" aria-pressed="true">
+        <img src="uk.png" alt="English"> EN
+      </button>
+      <button class="lang-btn" id="langBG" onclick="setLang('bg')" aria-label="Switch to Bulgarian" aria-pressed="false">
+        <img src="Bulgaria.jpg" alt="Български"> BG
+      </button>
+    </div>
+    <a href="pilot-dashboard.html" class="nav-skip" data-i18n="nav_skip">Skip to dashboard &rarr;</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2c-.5.1-.9.6-.6 1.1l1.5 2.5 5.5-1L6 13l-2 1 1 2 2-1 3.5-2.5-1 5.5 2.5 1.5c.5.3 1 0 1.1-.6z"/></svg>
+    <span data-i18n="hero_tag">Welcome to the Sunlytics Pilot Network</span>
+  </div>
+  <h1 data-i18n="hero_h1">You are <span>approved.</span><br>Let's get you flying.</h1>
+  <p data-i18n="hero_p">This takes about 5 minutes. Complete the steps below and you will be ready to accept your first mission today.</p>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="prog-step active" id="prog0">
+      <div class="prog-dot">1</div>
+      <div class="prog-label" data-i18n="prog0">How It Works</div>
+    </div>
+    <div class="prog-step" id="prog1">
+      <div class="prog-dot">2</div>
+      <div class="prog-label" data-i18n="prog1">Your Earnings</div>
+    </div>
+    <div class="prog-step" id="prog2">
+      <div class="prog-dot">3</div>
+      <div class="prog-label" data-i18n="prog2">First Mission</div>
+    </div>
+    <div class="prog-step" id="prog3">
+      <div class="prog-dot">4</div>
+      <div class="prog-label" data-i18n="prog3">Checklist</div>
+    </div>
+    <div class="prog-step" id="prog4">
+      <div class="prog-dot">5</div>
+      <div class="prog-label" data-i18n="prog4">Profile</div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- STEP 1: HOW IT WORKS -->
+  <div class="step-section active" id="step0">
+    <div class="card">
+      <h2 data-i18n="s1_h2">How Sunlytics works</h2>
+      <p data-i18n="s1_p">Every time a homeowner orders a drone report on sunlytics.bg, a mission is created and sent to pilots in that area. Here is the full flow from notification to payment.</p>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-num">1</div>
+          <div class="how-body">
+            <h4 data-i18n="s1_1_h">You get an SMS and email</h4>
+            <p data-i18n="s1_1_p">"New mission in Plovdiv. Address: bul. Ruski 45. Reward: €40. Accept?" You have 30 minutes to claim it before it goes to the next pilot.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">2</div>
+          <div class="how-body">
+            <h4 data-i18n="s1_2_h">Accept in the pilot dashboard</h4>
+            <p data-i18n="s1_2_p">Log in to your pilot dashboard, hit Accept, and the mission is locked to you. The homeowner is notified automatically.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">3</div>
+          <div class="how-body">
+            <h4 data-i18n="s1_3_h">Fly the roof</h4>
+            <p data-i18n="s1_3_p">Go to the address and fly a standard grid pattern over the roof. We recommend 30m altitude, 80% overlap, nadir angle. The whole flight takes 10 to 20 minutes.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">4</div>
+          <div class="how-body">
+            <h4 data-i18n="s1_4_h">Upload your images</h4>
+            <p data-i18n="s1_4_p">Go to upload-mission.html from your dashboard and upload the images before your mission deadline. Minimum 40 images per standard roof.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">5</div>
+          <div class="how-body">
+            <h4 data-i18n="s1_5_h">Get paid automatically</h4>
+            <p data-i18n="s1_5_p">Once images are validated by our system (usually within a few hours), your payment is released to your bank or Revolut. No invoicing needed.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box orange">
+      <div class="info-box-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div>
+        <div class="info-box-title" data-i18n="s1_safety_title">Important: only fly when it is safe</div>
+        <p data-i18n="s1_safety_p">Do not fly in wind above 10 m/s, rain, or temperatures below 0°C. Our system checks weather before scheduling but always use your own judgment. If conditions are unsafe, contact us and we reschedule at no penalty to you.</p>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="nextStep()"><span data-i18n="s1_next_btn">Next: Your Earnings</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- STEP 2: EARNINGS -->
+  <div class="step-section" id="step1">
+    <div class="card">
+      <h2 data-i18n="s2_h2">What you earn</h2>
+      <p data-i18n="s2_p">You earn €40 per completed and validated mission. Payment is automatic once images are approved. No invoicing, no chasing, no waiting weeks.</p>
+
+      <div class="earn-grid">
+        <div class="earn-card">
+          <div class="earn-num">€40</div>
+          <div class="earn-label" data-i18n="earn1_label">Per mission</div>
+        </div>
+        <div class="earn-card">
+          <div class="earn-num">€160</div>
+          <div class="earn-label" data-i18n="earn2_label">Per month (1/week)</div>
+        </div>
+        <div class="earn-card">
+          <div class="earn-num">€640</div>
+          <div class="earn-label" data-i18n="earn3_label">Per month (4/week)</div>
+        </div>
+      </div>
+
+      <div class="info-box green">
+        <div class="info-box-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div class="info-box-title" data-i18n="pay_title">Payment details</div>
+          <p data-i18n="pay_p">We pay by bank transfer or Revolut, whichever you prefer. Payments are processed within 24 hours of image validation. Set your preferred payment method in your profile.</p>
+        </div>
+      </div>
+
+      <div class="info-box blue">
+        <div class="info-box-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <div class="info-box-title" data-i18n="tax_title">Bulgarian tax note</div>
+          <p data-i18n="tax_p">If you earn over €500/month from Sunlytics, you may need to register as a self-insured person (самоосигуряващо се лице) or declare the income via a civil contract with the NRA (National Revenue Agency / НАП). We recommend checking with a local accountant. We provide monthly earnings summaries on request.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="prevStep()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> <span data-i18n="btn_back">Back</span></button>
+      <button class="btn-primary" onclick="nextStep()"><span data-i18n="s2_next_btn">Next: Your First Mission</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- STEP 3: FIRST MISSION GUIDE -->
+  <div class="step-section" id="step2">
+    <div class="card">
+      <h2 data-i18n="s3_h2">Flying your first mission</h2>
+      <p data-i18n="s3_p">Here is exactly what to do from the moment you get a mission notification to the moment you upload your images.</p>
+
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-num">1</div>
+          <div class="how-body">
+            <h4 data-i18n="s3_1_h">Check the mission details</h4>
+            <p data-i18n="s3_1_p">Address, roof type, and any notes from our team. Google Street View the address before you go so you know what to expect.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">2</div>
+          <div class="how-body">
+            <h4 data-i18n="s3_2_h">Check airspace and NOTAMs</h4>
+            <p data-i18n="s3_2_p">Use canfly.io or the CAA Bulgaria geozone map to confirm the address is in uncontrolled airspace. If it is within 1km of an airport, contact us before flying.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">3</div>
+          <div class="how-body">
+            <h4 data-i18n="s3_3_h">Flight settings</h4>
+            <p data-i18n="s3_3_p">Altitude: 30 to 40m above roof level. Overlap: 80% front, 70% side. Camera angle: 90° nadir (straight down). Image format: JPEG at full resolution. Minimum 40 images for a standard house, 80 for a warehouse.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">4</div>
+          <div class="how-body">
+            <h4 data-i18n="s3_4_h">Cover the full roof</h4>
+            <p data-i18n="s3_4_p">Fly a grid pattern covering the entire roof plus 5m margin on all sides. Do not miss any sections. Partial coverage is the most common reason for image rejection.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-num">5</div>
+          <div class="how-body">
+            <h4 data-i18n="s3_5_h">Upload within 24 hours</h4>
+            <p data-i18n="s3_5_p">Go to your pilot dashboard, open the mission, and use the Upload Images button. Images must be uploaded within 24 hours of the flight. After that the mission may be reassigned.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box orange">
+      <div class="info-box-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div>
+        <div class="info-box-title" data-i18n="s3_reject_title">Common rejection reasons</div>
+        <p data-i18n="s3_reject_p">Blurry images (fly slower), incomplete coverage, images taken at wrong angle (check your gimbal is set to nadir), or too few images. If your images are rejected you will be notified and given a chance to reshoot within 48 hours.</p>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="prevStep()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> <span data-i18n="btn_back">Back</span></button>
+      <button class="btn-primary" onclick="nextStep()"><span data-i18n="s3_next_btn">Next: Pre-flight Checklist</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- STEP 4: CHECKLIST -->
+  <div class="step-section" id="step3">
+    <div class="card">
+      <h2 data-i18n="s4_h2">Your pre-flight checklist</h2>
+      <p data-i18n="s4_p">Tick everything below before accepting your first mission. You will also use this checklist before every flight.</p>
+
+      <div class="checklist" id="checklist">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c1_label">CAA drone license in my possession</div><div class="check-sub" data-i18n="c1_sub">Open Category A1/A2/A3 or Specific Category STS</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c2_label">Drone is registered with the CAA</div><div class="check-sub" data-i18n="c2_sub">Registration number must be marked on the drone</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c3_label">Drone battery fully charged</div><div class="check-sub" data-i18n="c3_sub">Bring at least one spare battery per mission</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c4_label">SD card formatted and empty</div><div class="check-sub" data-i18n="c4_sub">At least 16GB free space recommended</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c5_label">Camera settings correct</div><div class="check-sub" data-i18n="c5_sub">Full resolution JPEG, gimbal at 90° nadir, auto exposure</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c6_label">Airspace checked (canfly.io)</div><div class="check-sub" data-i18n="c6_sub">Confirm no active TFRs or restricted zones</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c7_label">Weather checked and suitable</div><div class="check-sub" data-i18n="c7_sub">Wind under 10 m/s, no rain, temp above 0°C</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c8_label">Pilot dashboard login confirmed</div><div class="check-sub" data-i18n="c8_sub">Test login at pilot-login.html before your first mission</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c9_label">Upload-mission page tested</div><div class="check-sub" data-i18n="c9_sub">Confirm you can access upload-mission.html and see the upload form</div></div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" style="display:none"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="check-label" data-i18n="c10_label">Emergency contact saved</div><div class="check-sub" data-i18n="c10_sub">Save info@sunlytics.bg and +359 88 000 0000 in your phone</div></div>
+        </div>
+      </div>
+
+      <div id="checkProgress" style="margin-top:18px; font-size:13px; color:var(--gray); text-align:center;" data-i18n="progress_initial">0 of 10 completed</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="prevStep()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> <span data-i18n="btn_back">Back</span></button>
+      <button class="btn-primary" id="checklistNextBtn" onclick="nextStep()" disabled data-i18n="checklist_incomplete">Complete All Items First</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: PROFILE -->
+  <div class="step-section" id="step4">
+    <div class="card">
+      <h2 data-i18n="s5_h2">Confirm your details</h2>
+      <p data-i18n="s5_p">Check these details are correct. Your payment will be sent to the account you specify here.</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label data-i18n="lbl_first">First Name</label>
+          <input type="text" id="pFirstName" placeholder="Georgi">
+        </div>
+        <div class="form-group">
+          <label data-i18n="lbl_last">Last Name</label>
+          <input type="text" id="pLastName" placeholder="Ivanov">
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="lbl_phone">Phone Number</label>
+        <div style="display:flex;align-items:stretch;border:2px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;transition:border-color 0.2s;" id="phoneWrap">
+          <div style="display:flex;align-items:center;gap:7px;padding:0 14px;background:#f5f5f5;border-right:2px solid var(--border);font-size:14px;font-weight:600;color:#374151;white-space:nowrap;flex-shrink:0;">
+            <span style="font-size:17px;">🇧🇬</span> +359
+          </div>
+          <input type="tel" id="pPhone" placeholder="88 123 4567" style="flex:1;border:none;padding:12px 16px;font-size:14px;font-family:inherit;outline:none;background:transparent;" onfocus="document.getElementById('phoneWrap').style.borderColor='var(--orange)'" onblur="document.getElementById('phoneWrap').style.borderColor='var(--border)'">
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="lbl_payment">Preferred Payment Method</label>
+        <select id="pPayment">
+          <option value="" data-i18n="opt_select">Select method</option>
+          <option value="bank" data-i18n="opt_bank">Bank transfer (IBAN)</option>
+          <option value="revolut" data-i18n="opt_revolut">Revolut</option>
+        </select>
+      </div>
+      <div class="form-group" id="ibanGroup" style="display:none;">
+        <label data-i18n="lbl_iban">IBAN</label>
+        <input type="text" id="pIBAN" placeholder="BG80 BNBG 9661 1020 3456 78">
+      </div>
+      <div class="form-group" id="revolutGroup" style="display:none;">
+        <label data-i18n="lbl_revolut">Revolut phone or username</label>
+        <input type="text" id="pRevolut" placeholder="@georgip or +359 88 123 4567">
+      </div>
+      <div class="form-group">
+        <label data-i18n="lbl_drone">Drone Model</label>
+        <input type="text" id="pDrone" placeholder="e.g. DJI Mavic 3">
+      </div>
+      <div class="form-group">
+        <label data-i18n="lbl_license">CAA License Number</label>
+        <input type="text" id="pLicense" placeholder="e.g. BG-UAS-00123">
+      </div>
+    </div>
+
+    <div id="profileErr" style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;font-size:13px;color:#dc2626;margin-bottom:14px;display:none;"></div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="prevStep()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> <span data-i18n="btn_back">Back</span></button>
+      <button class="btn-primary" id="finishBtn" onclick="finishOnboarding()">
+        <span data-i18n="finish_btn">Finish Setup</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 6: DONE -->
+  <div class="step-section" id="step5">
+    <div class="card">
+      <div class="success-wrap">
+        <div class="success-circle">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 data-i18n="done_h2">You are ready to fly.</h2>
+        <p data-i18n="done_p">Your profile is set up and you are now active in the Sunlytics pilot network. Your first mission notification could arrive at any time.</p>
+        <a href="pilot-dashboard.html" class="btn-primary" style="display:inline-flex; margin: 0 auto;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span data-i18n="done_dashboard_btn">Go to Pilot Dashboard</span>
+        </a>
+        <p style="margin-top:20px; font-size:13px;" data-i18n="done_questions_p">Questions? Email us at <a href="mailto:info@sunlytics.bg" style="color:var(--orange-dark);">info@sunlytics.bg</a></p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>&copy; 2026 Sunlytics EOOD &middot; <a href="privacy.html">Privacy</a> <a href="terms.html">Terms</a> <a href="contact.html">Contact</a></p>
+  <p style="margin:10px 0 0; display:flex; align-items:center; justify-content:center; gap:10px;">
+    <a href="https://g.page/r/sunlytics" target="_blank" rel="noopener" aria-label="Google Business" title="Review us on Google" style="width:28px;height:28px;background:#fff;border:1px solid #e8e8e8;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+      <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    </a>
+    <a href="#" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn" style="width:28px;height:28px;background:#fff;border:1px solid #e8e8e8;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg>
+    </a>
+  </p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://keeityfejyfqqsvcqfsz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_A6r_0AtMpEs_KBJIJJXmYg_mq66XazY';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── i18n ─────────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    nav_skip: 'Skip to dashboard &rarr;',
+    hero_tag: 'Welcome to the Sunlytics Pilot Network',
+    hero_h1: "You are <span>approved.</span><br>Let's get you flying.",
+    hero_p: 'This takes about 5 minutes. Complete the steps below and you will be ready to accept your first mission today.',
+    prog0: 'How It Works', prog1: 'Your Earnings', prog2: 'First Mission', prog3: 'Checklist', prog4: 'Profile',
+    s1_h2: 'How Sunlytics works',
+    s1_p: 'Every time a homeowner orders a drone report on sunlytics.bg, a mission is created and sent to pilots in that area. Here is the full flow from notification to payment.',
+    s1_1_h: 'You get an SMS and email',
+    s1_1_p: '"New mission in Plovdiv. Address: bul. Ruski 45. Reward: \u20ac40. Accept?" You have 30 minutes to claim it before it goes to the next pilot.',
+    s1_2_h: 'Accept in the pilot dashboard',
+    s1_2_p: 'Log in to your pilot dashboard, hit Accept, and the mission is locked to you. The homeowner is notified automatically.',
+    s1_3_h: 'Fly the roof',
+    s1_3_p: 'Go to the address and fly a standard grid pattern over the roof. We recommend 30m altitude, 80% overlap, nadir angle. The whole flight takes 10 to 20 minutes.',
+    s1_4_h: 'Upload your images',
+    s1_4_p: 'Go to upload-mission.html from your dashboard and upload the images before your mission deadline. Minimum 40 images per standard roof.',
+    s1_5_h: 'Get paid automatically',
+    s1_5_p: 'Once images are validated by our system (usually within a few hours), your payment is released to your bank or Revolut. No invoicing needed.',
+    s1_safety_title: 'Important: only fly when it is safe',
+    s1_safety_p: 'Do not fly in wind above 10 m/s, rain, or temperatures below 0\u00b0C. Our system checks weather before scheduling but always use your own judgment. If conditions are unsafe, contact us and we reschedule at no penalty to you.',
+    s1_next_btn: 'Next: Your Earnings',
+    s2_h2: 'What you earn',
+    s2_p: 'You earn \u20ac40 per completed and validated mission. Payment is automatic once images are approved. No invoicing, no chasing, no waiting weeks.',
+    earn1_label: 'Per mission', earn2_label: 'Per month (1/week)', earn3_label: 'Per month (4/week)',
+    pay_title: 'Payment details',
+    pay_p: 'We pay by bank transfer or Revolut, whichever you prefer. Payments are processed within 24 hours of image validation. Set your preferred payment method in your profile.',
+    tax_title: 'Bulgarian tax note',
+    tax_p: 'If you earn over \u20ac500/month from Sunlytics, you may need to register as a self-insured person (\u0441\u0430\u043c\u043e\u043e\u0441\u0438\u0433\u0443\u0440\u044f\u0432\u0430\u0449\u043e \u0441\u0435 \u043b\u0438\u0446\u0435) or declare the income via a civil contract with the NRA (National Revenue Agency / \u041d\u0410\u041f). We recommend checking with a local accountant. We provide monthly earnings summaries on request.',
+    s2_next_btn: 'Next: Your First Mission',
+    s3_h2: 'Flying your first mission',
+    s3_p: 'Here is exactly what to do from the moment you get a mission notification to the moment you upload your images.',
+    s3_1_h: 'Check the mission details',
+    s3_1_p: 'Address, roof type, and any notes from our team. Google Street View the address before you go so you know what to expect.',
+    s3_2_h: 'Check airspace and NOTAMs',
+    s3_2_p: 'Use canfly.io or the CAA Bulgaria geozone map to confirm the address is in uncontrolled airspace. If it is within 1km of an airport, contact us before flying.',
+    s3_3_h: 'Flight settings',
+    s3_3_p: 'Altitude: 30 to 40m above roof level. Overlap: 80% front, 70% side. Camera angle: 90\u00b0 nadir (straight down). Image format: JPEG at full resolution. Minimum 40 images for a standard house, 80 for a warehouse.',
+    s3_4_h: 'Cover the full roof',
+    s3_4_p: 'Fly a grid pattern covering the entire roof plus 5m margin on all sides. Do not miss any sections. Partial coverage is the most common reason for image rejection.',
+    s3_5_h: 'Upload within 24 hours',
+    s3_5_p: 'Go to your pilot dashboard, open the mission, and use the Upload Images button. Images must be uploaded within 24 hours of the flight. After that the mission may be reassigned.',
+    s3_reject_title: 'Common rejection reasons',
+    s3_reject_p: 'Blurry images (fly slower), incomplete coverage, images taken at wrong angle (check your gimbal is set to nadir), or too few images. If your images are rejected you will be notified and given a chance to reshoot within 48 hours.',
+    s3_next_btn: 'Next: Pre-flight Checklist',
+    btn_back: 'Back',
+    s4_h2: 'Your pre-flight checklist',
+    s4_p: 'Tick everything below before accepting your first mission. You will also use this checklist before every flight.',
+    c1_label: 'CAA drone license in my possession', c1_sub: 'Open Category A1/A2/A3 or Specific Category STS',
+    c2_label: 'Drone is registered with the CAA', c2_sub: 'Registration number must be marked on the drone',
+    c3_label: 'Drone battery fully charged', c3_sub: 'Bring at least one spare battery per mission',
+    c4_label: 'SD card formatted and empty', c4_sub: 'At least 16GB free space recommended',
+    c5_label: 'Camera settings correct', c5_sub: 'Full resolution JPEG, gimbal at 90\u00b0 nadir, auto exposure',
+    c6_label: 'Airspace checked (canfly.io)', c6_sub: 'Confirm no active TFRs or restricted zones',
+    c7_label: 'Weather checked and suitable', c7_sub: 'Wind under 10 m/s, no rain, temp above 0\u00b0C',
+    c8_label: 'Pilot dashboard login confirmed', c8_sub: 'Test login at pilot-login.html before your first mission',
+    c9_label: 'Upload-mission page tested', c9_sub: 'Confirm you can access upload-mission.html and see the upload form',
+    c10_label: 'Emergency contact saved', c10_sub: 'Save info@sunlytics.bg and +359 88 000 0000 in your phone',
+    progress_initial: '0 of 10 completed', progress_of: ' of ', progress_completed: ' completed',
+    checklist_done: 'All done, next step', checklist_incomplete: 'Complete All Items First',
+    s5_h2: 'Confirm your details',
+    s5_p: 'Check these details are correct. Your payment will be sent to the account you specify here.',
+    lbl_first: 'First Name', lbl_last: 'Last Name', lbl_phone: 'Phone Number', lbl_payment: 'Preferred Payment Method',
+    opt_select: 'Select method', opt_bank: 'Bank transfer (IBAN)', opt_revolut: 'Revolut',
+    lbl_iban: 'IBAN', lbl_revolut: 'Revolut phone or username', lbl_drone: 'Drone Model', lbl_license: 'CAA License Number',
+    finish_btn: 'Finish Setup',
+    err_fill: 'Please fill in all fields before finishing.', saving: 'Saving...',
+    done_h2: 'You are ready to fly.',
+    done_p: 'Your profile is set up and you are now active in the Sunlytics pilot network. Your first mission notification could arrive at any time.',
+    done_dashboard_btn: 'Go to Pilot Dashboard',
+    done_questions_p: 'Questions? Email us at <a href="mailto:info@sunlytics.bg" style="color:var(--orange-dark);">info@sunlytics.bg</a>',
+  },
+  bg: {
+    nav_skip: '\u041a\u044a\u043c \u0442\u0430\u0431\u043b\u043e\u0442\u043e &rarr;',
+    hero_tag: '\u0414\u043e\u0431\u0440\u0435 \u0434\u043e\u0448\u043b\u0438 \u0432 \u043c\u0440\u0435\u0436\u0430\u0442\u0430 \u043e\u0442 \u043f\u0438\u043b\u043e\u0442\u0438 \u043d\u0430 Sunlytics',
+    hero_h1: '\u041e\u0434\u043e\u0431\u0440\u0435\u043d\u0438 \u0441\u0442\u0435. <span>\u041e\u0434\u043e\u0431\u0440\u0435\u043d\u0438.</span><br>\u0414\u0430 \u0432\u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u0432\u0438\u043c \u0437\u0430 \u043f\u043e\u043b\u0435\u0442.',
+    hero_p: '\u0422\u043e\u0432\u0430 \u043e\u0442\u043d\u0435\u043c\u0430 \u043e\u043a\u043e\u043b\u043e 5 \u043c\u0438\u043d\u0443\u0442\u0438. \u0417\u0430\u0432\u044a\u0440\u0448\u0435\u0442\u0435 \u0441\u0442\u044a\u043f\u043a\u0438\u0442\u0435 \u043f\u043e-\u0434\u043e\u043b\u0443 \u0438 \u0449\u0435 \u0441\u0442\u0435 \u0433\u043e\u0442\u043e\u0432\u0438 \u0434\u0430 \u043f\u0440\u0438\u0435\u043c\u0435\u0442\u0435 \u043f\u044a\u0440\u0432\u0430\u0442\u0430 \u0441\u0438 \u043c\u0438\u0441\u0438\u044f \u043e\u0449\u0435 \u0434\u043d\u0435\u0441.',
+    prog0: '\u041a\u0430\u043a \u0440\u0430\u0431\u043e\u0442\u0438', prog1: '\u0412\u0430\u0448\u0438\u0442\u0435 \u043f\u0440\u0438\u0445\u043e\u0434\u0438', prog2: '\u041f\u044a\u0440\u0432\u0430 \u043c\u0438\u0441\u0438\u044f', prog3: '\u041a\u043e\u043d\u0442\u0440\u043e\u043b\u0435\u043d \u0441\u043f\u0438\u0441\u044a\u043a', prog4: '\u041f\u0440\u043e\u0444\u0438\u043b',
+    s1_h2: '\u041a\u0430\u043a \u0440\u0430\u0431\u043e\u0442\u0438 Sunlytics',
+    s1_p: '\u0412\u0441\u0435\u043a\u0438 \u043f\u044a\u0442, \u043a\u043e\u0433\u0430\u0442\u043e \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u0438\u043a \u043d\u0430 \u0438\u043c\u043e\u0442 \u043f\u043e\u0440\u044a\u0447\u0430 \u0434\u0440\u043e\u043d \u0434\u043e\u043a\u043b\u0430\u0434 \u043d\u0430 sunlytics.bg, \u0441\u0435 \u0441\u044a\u0437\u0434\u0430\u0432\u0430 \u043c\u0438\u0441\u0438\u044f \u0438 \u0441\u0435 \u0438\u0437\u043f\u0440\u0430\u0449\u0430 \u043d\u0430 \u043f\u0438\u043b\u043e\u0442\u0438 \u0432 \u0442\u043e\u0437\u0438 \u0440\u0430\u0439\u043e\u043d. \u0415\u0442\u043e \u0446\u0435\u043b\u0438\u044f \u043f\u0440\u043e\u0446\u0435\u0441 \u043e\u0442 \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u0435\u0442\u043e \u0434\u043e \u043f\u043b\u0430\u0449\u0430\u043d\u0435\u0442\u043e.',
+    s1_1_h: '\u041f\u043e\u043b\u0443\u0447\u0430\u0432\u0430\u0442\u0435 SMS \u0438 \u0438\u043c\u0435\u0439\u043b',
+    s1_1_p: '\u201e\u041d\u043e\u0432\u0430 \u043c\u0438\u0441\u0438\u044f \u0432 \u041f\u043b\u043e\u0432\u0434\u0438\u0432. \u0410\u0434\u0440\u0435\u0441: \u0431\u0443\u043b. \u0420\u0443\u0441\u043a\u0438 45. \u041d\u0430\u0433\u0440\u0430\u0434\u0430: \u20ac40. \u041f\u0440\u0438\u0435\u043c\u0430\u0442\u0435 \u043b\u0438?\u201c \u0418\u043c\u0430\u0442\u0435 30 \u043c\u0438\u043d\u0443\u0442\u0438 \u0434\u0430 \u044f \u043f\u0440\u0438\u0435\u043c\u0435\u0442\u0435, \u043f\u0440\u0435\u0434\u0438 \u0434\u0430 \u043e\u0442\u0438\u0434\u0435 \u043f\u0440\u0438 \u0441\u043b\u0435\u0434\u0432\u0430\u0449\u0438\u044f \u043f\u0438\u043b\u043e\u0442.',
+    s1_2_h: '\u041f\u0440\u0438\u0435\u043c\u0435\u0442\u0435 \u0432 \u0442\u0430\u0431\u043b\u043e\u0442\u043e \u0437\u0430 \u043f\u0438\u043b\u043e\u0442\u0438',
+    s1_2_p: '\u0412\u043b\u0435\u0437\u0442\u0435 \u0432 \u0442\u0430\u0431\u043b\u043e\u0442\u043e \u0441\u0438 \u0437\u0430 \u043f\u0438\u043b\u043e\u0442\u0438, \u043d\u0430\u0442\u0438\u0441\u043d\u0435\u0442\u0435 \u201e\u041f\u0440\u0438\u0435\u043c\u0438\u201c \u0438 \u043c\u0438\u0441\u0438\u044f\u0442\u0430 \u0441\u0435 \u0437\u0430\u043a\u043b\u044e\u0447\u0432\u0430 \u0437\u0430 \u0432\u0430\u0441. \u0421\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u0438\u043a\u044a\u0442 \u043d\u0430 \u0438\u043c\u043e\u0442\u0430 \u0431\u0438\u0432\u0430 \u0443\u0432\u0435\u0434\u043e\u043c\u0435\u043d \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u043e.',
+    s1_3_h: '\u041f\u0440\u0435\u0433\u043b\u0435\u0434\u0430\u0439\u0442\u0435 \u043f\u043e\u043a\u0440\u0438\u0432\u0430',
+    s1_3_p: '\u041e\u0442\u0438\u0434\u0435\u0442\u0435 \u043d\u0430 \u0430\u0434\u0440\u0435\u0441\u0430 \u0438 \u043e\u0431\u043b\u0435\u0442\u0435\u0442\u0435 \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u0435\u043d \u043c\u0440\u0435\u0436\u043e\u0432 \u043c\u0430\u0440\u0448\u0440\u0443\u0442 \u043d\u0430\u0434 \u043f\u043e\u043a\u0440\u0438\u0432\u0430. \u041f\u0440\u0435\u043f\u043e\u0440\u044a\u0447\u0432\u0430\u043c\u0435 \u0432\u0438\u0441\u043e\u0447\u0438\u043d\u0430 30\u043c, \u0437\u0430\u0441\u0442\u044a\u043f\u0432\u0430\u043d\u0435 80% \u0438 \u043d\u0430\u0434\u0438\u0440\u0435\u043d \u044a\u0433\u044a\u043b. \u0426\u0435\u043b\u0438\u044f\u0442 \u043f\u043e\u043b\u0435\u0442 \u043e\u0442\u043d\u0435\u043c\u0430 10 \u0434\u043e 20 \u043c\u0438\u043d\u0443\u0442\u0438.',
+    s1_4_h: '\u041a\u0430\u0447\u0435\u0442\u0435 \u0441\u0432\u043e\u0438\u0442\u0435 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f',
+    s1_4_p: '\u041e\u0442\u0438\u0434\u0435\u0442\u0435 \u043d\u0430 upload-mission.html \u043e\u0442 \u0442\u0430\u0431\u043b\u043e\u0442\u043e \u0441\u0438 \u0438 \u043a\u0430\u0447\u0435\u0442\u0435 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u0442\u0430 \u043f\u0440\u0435\u0434\u0438 \u043a\u0440\u0430\u0439\u043d\u0438\u044f \u0441\u0440\u043e\u043a \u043d\u0430 \u043c\u0438\u0441\u0438\u044f\u0442\u0430. \u041c\u0438\u043d\u0438\u043c\u0443\u043c 40 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f \u0437\u0430 \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u0435\u043d \u043f\u043e\u043a\u0440\u0438\u0432.',
+    s1_5_h: '\u041f\u043e\u043b\u0443\u0447\u0430\u0432\u0430\u0442\u0435 \u043f\u043b\u0430\u0449\u0430\u043d\u0435 \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u043e',
+    s1_5_p: '\u0421\u043b\u0435\u0434 \u043a\u0430\u0442\u043e \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u0442\u0430 \u0431\u044a\u0434\u0430\u0442 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u0438 \u043e\u0442 \u043d\u0430\u0448\u0430\u0442\u0430 \u0441\u0438\u0441\u0442\u0435\u043c\u0430 (\u043e\u0431\u0438\u043a\u043d\u043e\u0432\u0435\u043d\u043e \u0432 \u0440\u0430\u043c\u043a\u0438\u0442\u0435 \u043d\u0430 \u043d\u044f\u043a\u043e\u043b\u043a\u043e \u0447\u0430\u0441\u0430), \u043f\u043b\u0430\u0449\u0430\u043d\u0435\u0442\u043e \u0432\u0438 \u0441\u0435 \u043f\u0440\u0435\u0432\u0435\u0436\u0434\u0430 \u043a\u044a\u043c \u0431\u0430\u043d\u043a\u0430\u0442\u0430 \u0432\u0438 \u0438\u043b\u0438 Revolut. \u041d\u0435 \u0435 \u043d\u0443\u0436\u043d\u0430 \u0444\u0430\u043a\u0442\u0443\u0440\u0430.',
+    s1_safety_title: '\u0412\u0430\u0436\u043d\u043e: \u043b\u0435\u0442\u0435\u0442\u0435 \u0441\u0430\u043c\u043e \u043a\u043e\u0433\u0430\u0442\u043e \u0435 \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e',
+    s1_safety_p: '\u041d\u0435 \u043b\u0435\u0442\u0435\u0442\u0435 \u043f\u0440\u0438 \u0432\u044f\u0442\u044a\u0440 \u043d\u0430\u0434 10 m/s, \u0434\u044a\u0436\u0434 \u0438\u043b\u0438 \u0442\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u0438 \u043f\u043e\u0434 0\u00b0C. \u041d\u0430\u0448\u0430\u0442\u0430 \u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0432\u0430 \u0432\u0440\u0435\u043c\u0435\u0442\u043e \u043f\u0440\u0435\u0434\u0438 \u043d\u0430\u0441\u0440\u043e\u0447\u0432\u0430\u043d\u0435, \u043d\u043e \u0432\u0438\u043d\u0430\u0433\u0438 \u0438\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u0439\u0442\u0435 \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u0430\u0442\u0430 \u0441\u0438 \u043f\u0440\u0435\u0446\u0435\u043d\u043a\u0430. \u0410\u043a\u043e \u0443\u0441\u043b\u043e\u0432\u0438\u044f\u0442\u0430 \u0441\u0430 \u043d\u0435\u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u0438, \u0441\u0432\u044a\u0440\u0436\u0435\u0442\u0435 \u0441\u0435 \u0441 \u043d\u0430\u0441 \u0438 \u0449\u0435 \u043f\u0440\u0435\u043d\u0430\u0441\u0440\u043e\u0447\u0438\u043c \u0431\u0435\u0437 \u043d\u0435\u0443\u0441\u0442\u043e\u0439\u043a\u0438 \u0437\u0430 \u0432\u0430\u0441.',
+    s1_next_btn: '\u041d\u0430\u043f\u0440\u0435\u0434: \u0412\u0430\u0448\u0438\u0442\u0435 \u043f\u0440\u0438\u0445\u043e\u0434\u0438',
+    s2_h2: '\u041a\u043e\u043b\u043a\u043e \u043f\u0435\u0447\u0435\u043b\u0438\u0442\u0435',
+    s2_p: '\u041f\u0435\u0447\u0435\u043b\u0438\u0442\u0435 \u20ac40 \u0437\u0430 \u0432\u0441\u044f\u043a\u0430 \u0437\u0430\u0432\u044a\u0440\u0448\u0435\u043d\u0430 \u0438 \u043e\u0434\u043e\u0431\u0440\u0435\u043d\u0430 \u043c\u0438\u0441\u0438\u044f. \u041f\u043b\u0430\u0449\u0430\u043d\u0435\u0442\u043e \u0435 \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u043e \u0441\u043b\u0435\u0434 \u043e\u0434\u043e\u0431\u0440\u0435\u043d\u0438\u0435 \u043d\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u0442\u0430. \u0411\u0435\u0437 \u0444\u0430\u043a\u0442\u0443\u0440\u0438\u0440\u0430\u043d\u0435, \u0431\u0435\u0437 \u0447\u0430\u043a\u0430\u043d\u0435, \u0431\u0435\u0437 \u0441\u0435\u0434\u043c\u0438\u0446\u0438 \u0447\u0430\u043a\u0430\u043d\u0435.',
+    earn1_label: '\u041d\u0430 \u043c\u0438\u0441\u0438\u044f', earn2_label: '\u041d\u0430 \u043c\u0435\u0441\u0435\u0446 (1/\u0441\u0435\u0434\u043c\u0438\u0446\u0430)', earn3_label: '\u041d\u0430 \u043c\u0435\u0441\u0435\u0446 (4/\u0441\u0435\u0434\u043c\u0438\u0446\u0430)',
+    pay_title: '\u0414\u0435\u0442\u0430\u0439\u043b\u0438 \u0437\u0430 \u043f\u043b\u0430\u0449\u0430\u043d\u0435',
+    pay_p: '\u041f\u043b\u0430\u0449\u0430\u043c\u0435 \u0447\u0440\u0435\u0437 \u0431\u0430\u043d\u043a\u043e\u0432 \u043f\u0440\u0435\u0432\u043e\u0434 \u0438\u043b\u0438 Revolut, \u043a\u043e\u0435\u0442\u043e \u043f\u0440\u0435\u0434\u043f\u043e\u0447\u0438\u0442\u0430\u0442\u0435. \u041f\u043b\u0430\u0449\u0430\u043d\u0438\u044f\u0442\u0430 \u0441\u0435 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0432\u0430\u0442 \u0432 \u0440\u0430\u043c\u043a\u0438\u0442\u0435 \u043d\u0430 24 \u0447\u0430\u0441\u0430 \u0441\u043b\u0435\u0434 \u043e\u0434\u043e\u0431\u0440\u0435\u043d\u0438\u0435 \u043d\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u0442\u0430. \u0417\u0430\u0434\u0430\u0439\u0442\u0435 \u043f\u0440\u0435\u0434\u043f\u043e\u0447\u0438\u0442\u0430\u043d\u0438\u044f \u0441\u0438 \u043c\u0435\u0442\u043e\u0434 \u043d\u0430 \u043f\u043b\u0430\u0449\u0430\u043d\u0435 \u0432 \u043f\u0440\u043e\u0444\u0438\u043b\u0430 \u0441\u0438.',
+    tax_title: '\u0411\u0435\u043b\u0435\u0436\u043a\u0430 \u0437\u0430 \u0434\u0430\u043d\u044a\u0446\u0438\u0442\u0435',
+    tax_p: '\u0410\u043a\u043e \u043f\u0435\u0447\u0435\u043b\u0438\u0442\u0435 \u043d\u0430\u0434 \u20ac500/\u043c\u0435\u0441\u0435\u0446 \u043e\u0442 Sunlytics, \u043c\u043e\u0436\u0435 \u0434\u0430 \u0435 \u043d\u0435\u043e\u0431\u0445\u043e\u0434\u0438\u043c\u043e \u0434\u0430 \u0441\u0435 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u0430\u0442\u0435 \u043a\u0430\u0442\u043e \u0441\u0430\u043c\u043e\u043e\u0441\u0438\u0433\u0443\u0440\u044f\u0432\u0430\u0449\u043e \u0441\u0435 \u043b\u0438\u0446\u0435 \u0438\u043b\u0438 \u0434\u0430 \u0434\u0435\u043a\u043b\u0430\u0440\u0438\u0440\u0430\u0442\u0435 \u0434\u043e\u0445\u043e\u0434\u0430 \u0447\u0440\u0435\u0437 \u0433\u0440\u0430\u0436\u0434\u0430\u043d\u0441\u043a\u0438 \u0434\u043e\u0433\u043e\u0432\u043e\u0440 \u043a\u044a\u043c \u041d\u0410\u041f (\u041d\u0430\u0446\u0438\u043e\u043d\u0430\u043b\u043d\u0430 \u0430\u0433\u0435\u043d\u0446\u0438\u044f \u0437\u0430 \u043f\u0440\u0438\u0445\u043e\u0434\u0438\u0442\u0435). \u041f\u0440\u0435\u043f\u043e\u0440\u044a\u0447\u0432\u0430\u043c\u0435 \u0434\u0430 \u0441\u0435 \u043a\u043e\u043d\u0441\u0443\u043b\u0442\u0438\u0440\u0430\u0442\u0435 \u0441 \u043c\u0435\u0441\u0442\u0435\u043d \u0441\u0447\u0435\u0442\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b. \u041f\u0440\u0435\u0434\u043e\u0441\u0442\u0430\u0432\u044f\u043c\u0435 \u043c\u0435\u0441\u0435\u0447\u043d\u0438 \u043e\u0431\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u043d\u0430 \u043f\u0440\u0438\u0445\u043e\u0434\u0438\u0442\u0435 \u043f\u043e \u0437\u0430\u044f\u0432\u043a\u0430.',
+    s2_next_btn: '\u041d\u0430\u043f\u0440\u0435\u0434: \u041f\u044a\u0440\u0432\u0430\u0442\u0430 \u0432\u0438 \u043c\u0438\u0441\u0438\u044f',
+    s3_h2: '\u041f\u043e\u043b\u0435\u0442 \u043d\u0430 \u043f\u044a\u0440\u0432\u0430\u0442\u0430 \u0432\u0438 \u043c\u0438\u0441\u0438\u044f',
+    s3_p: '\u0415\u0442\u043e \u0442\u043e\u0447\u043d\u043e \u043a\u0430\u043a\u0432\u043e \u0442\u0440\u044f\u0431\u0432\u0430 \u0434\u0430 \u043d\u0430\u043f\u0440\u0430\u0432\u0438\u0442\u0435 \u043e\u0442 \u043c\u043e\u043c\u0435\u043d\u0442\u0430, \u0432 \u043a\u043e\u0439\u0442\u043e \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u0435 \u0437\u0430 \u043c\u0438\u0441\u0438\u044f, \u0434\u043e \u043c\u043e\u043c\u0435\u043d\u0442\u0430 \u043d\u0430 \u043a\u0430\u0447\u0432\u0430\u043d\u0435 \u043d\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u0442\u0430.',
+    s3_1_h: '\u041f\u0440\u043e\u0432\u0435\u0440\u0435\u0442\u0435 \u0434\u0435\u0442\u0430\u0439\u043b\u0438\u0442\u0435 \u043d\u0430 \u043c\u0438\u0441\u0438\u044f\u0442\u0430',
+    s3_1_p: '\u0410\u0434\u0440\u0435\u0441, \u0442\u0438\u043f \u043f\u043e\u043a\u0440\u0438\u0432 \u0438 \u0431\u0435\u043b\u0435\u0436\u043a\u0438 \u043e\u0442 \u043d\u0430\u0448\u0438\u044f \u0435\u043a\u0438\u043f. \u0420\u0430\u0437\u0433\u043b\u0435\u0434\u0430\u0439\u0442\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0432 Google Street View, \u043f\u0440\u0435\u0434\u0438 \u0434\u0430 \u0442\u0440\u044a\u0433\u043d\u0435\u0442\u0435, \u0437\u0430 \u0434\u0430 \u0437\u043d\u0430\u0435\u0442\u0435 \u043a\u0430\u043a\u0432\u043e \u0434\u0430 \u043e\u0447\u0430\u043a\u0432\u0430\u0442\u0435.',
+    s3_2_h: '\u041f\u0440\u043e\u0432\u0435\u0440\u0435\u0442\u0435 \u0432\u044a\u0437\u0434\u0443\u0448\u043d\u043e\u0442\u043e \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e \u0438 NOTAM',
+    s3_2_p: '\u0418\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u0439\u0442\u0435 canfly.io \u0438\u043b\u0438 \u043a\u0430\u0440\u0442\u0430\u0442\u0430 \u043d\u0430 \u0433\u0435\u043e\u0437\u043e\u043d\u0438\u0442\u0435 \u043d\u0430 CAA \u0411\u044a\u043b\u0433\u0430\u0440\u0438\u044f, \u0437\u0430 \u0434\u0430 \u043f\u043e\u0442\u0432\u044a\u0440\u0434\u0438\u0442\u0435, \u0447\u0435 \u0430\u0434\u0440\u0435\u0441\u044a\u0442 \u0435 \u0432 \u043d\u0435\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u0438\u0440\u0430\u043d\u043e \u0432\u044a\u0437\u0434\u0443\u0448\u043d\u043e \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e. \u0410\u043a\u043e \u0435 \u0432 \u0440\u0430\u0434\u0438\u0443\u0441 \u043e\u0442 1 km \u043e\u0442 \u043b\u0435\u0442\u0438\u0449\u0435, \u0441\u0432\u044a\u0440\u0436\u0435\u0442\u0435 \u0441\u0435 \u0441 \u043d\u0430\u0441, \u043f\u0440\u0435\u0434\u0438 \u0434\u0430 \u043b\u0435\u0442\u0438\u0442\u0435.',
+    s3_3_h: '\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 \u043d\u0430 \u043f\u043e\u043b\u0435\u0442\u0430',
+    s3_3_p: '\u0412\u0438\u0441\u043e\u0447\u0438\u043d\u0430: 30 \u0434\u043e 40 m \u043d\u0430\u0434 \u043d\u0438\u0432\u043e\u0442\u043e \u043d\u0430 \u043f\u043e\u043a\u0440\u0438\u0432\u0430. \u0417\u0430\u0441\u0442\u044a\u043f\u0432\u0430\u043d\u0435: 80% \u043e\u0442\u043f\u0440\u0435\u0434, 70% \u0441\u0442\u0440\u0430\u043d\u0438\u0447\u043d\u043e. \u042a\u0433\u044a\u043b \u043d\u0430 \u043a\u0430\u043c\u0435\u0440\u0430\u0442\u0430: 90\u00b0 \u043d\u0430\u0434\u0438\u0440 (\u043f\u0440\u044f\u043a\u043e \u043d\u0430\u0434\u043e\u043b\u0443). \u0424\u043e\u0440\u043c\u0430\u0442 \u043d\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435: JPEG \u0441 \u043f\u044a\u043b\u043d\u0430 \u0440\u0435\u0437\u043e\u043b\u044e\u0446\u0438\u044f. \u041c\u0438\u043d\u0438\u043c\u0443\u043c 40 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f \u0437\u0430 \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u0430 \u043a\u044a\u0449\u0430, 80 \u0437\u0430 \u0441\u043a\u043b\u0430\u0434.',
+    s3_4_h: '\u041f\u043e\u043a\u0440\u0438\u0439\u0442\u0435 \u0446\u0435\u043b\u0438\u044f \u043f\u043e\u043a\u0440\u0438\u0432',
+    s3_4_p: '\u041e\u0431\u043b\u0435\u0442\u0435\u0442\u0435 \u043c\u0440\u0435\u0436\u043e\u0432 \u043c\u0430\u0440\u0448\u0440\u0443\u0442, \u043f\u043e\u043a\u0440\u0438\u0432\u0430\u0449 \u0446\u0435\u043b\u0438\u044f \u043f\u043e\u043a\u0440\u0438\u0432 \u043f\u043b\u044e\u0441 5 m \u043e\u0442 \u0432\u0441\u0438\u0447\u043a\u0438 \u0441\u0442\u0440\u0430\u043d\u0438. \u041d\u0435 \u043f\u0440\u043e\u043f\u0443\u0441\u043a\u0430\u0439\u0442\u0435 \u0447\u0430\u0441\u0442\u0438. \u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e\u0442\u043e \u043f\u043e\u043a\u0440\u0438\u0442\u0438\u0435 \u0435 \u043d\u0430\u0439-\u0447\u0435\u0441\u0442\u0430\u0442\u0430 \u043f\u0440\u0438\u0447\u0438\u043d\u0430 \u0437\u0430 \u043e\u0442\u0445\u0432\u044a\u0440\u043b\u044f\u043d\u0435 \u043d\u0430 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f.',
+    s3_5_h: '\u041a\u0430\u0447\u0435\u0442\u0435 \u0432 \u0440\u0430\u043c\u043a\u0438\u0442\u0435 \u043d\u0430 24 \u0447\u0430\u0441\u0430',
+    s3_5_p: '\u041e\u0442\u0438\u0434\u0435\u0442\u0435 \u0432 \u0442\u0430\u0431\u043b\u043e\u0442\u043e \u0441\u0438 \u0437\u0430 \u043f\u0438\u043b\u043e\u0442\u0438, \u043e\u0442\u0432\u043e\u0440\u0435\u0442\u0435 \u043c\u0438\u0441\u0438\u044f\u0442\u0430 \u0438 \u0438\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u0439\u0442\u0435 \u0431\u0443\u0442\u043e\u043d\u0430 \u201e\u041a\u0430\u0447\u0438 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u201c. \u0418\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u0442\u0430 \u0442\u0440\u044f\u0431\u0432\u0430 \u0434\u0430 \u0441\u0435 \u043a\u0430\u0447\u0430\u0442 \u0432 \u0440\u0430\u043c\u043a\u0438\u0442\u0435 \u043d\u0430 24 \u0447\u0430\u0441\u0430 \u0441\u043b\u0435\u0434 \u043f\u043e\u043b\u0435\u0442\u0430. \u0421\u043b\u0435\u0434 \u0442\u043e\u0432\u0430 \u043c\u0438\u0441\u0438\u044f\u0442\u0430 \u043c\u043e\u0436\u0435 \u0434\u0430 \u0431\u044a\u0434\u0435 \u043f\u0440\u0435\u0432\u044a\u0437\u043b\u043e\u0436\u0435\u043d\u0430.',
+    s3_reject_title: '\u0427\u0435\u0441\u0442\u0438 \u043f\u0440\u0438\u0447\u0438\u043d\u0438 \u0437\u0430 \u043e\u0442\u0445\u0432\u044a\u0440\u043b\u044f\u043d\u0435',
+    s3_reject_p: '\u0420\u0430\u0437\u043c\u0430\u0437\u0430\u043d\u0438 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f (\u043b\u0435\u0442\u0435\u0442\u0435 \u043f\u043e-\u0431\u0430\u0432\u043d\u043e), \u043d\u0435\u043f\u044a\u043b\u043d\u043e \u043f\u043e\u043a\u0440\u0438\u0442\u0438\u0435, \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f \u043e\u0442 \u0433\u0440\u0435\u0448\u0435\u043d \u044a\u0433\u044a\u043b (\u043f\u0440\u043e\u0432\u0435\u0440\u0435\u0442\u0435 \u0434\u0430\u043b\u0438 \u0433\u0438\u043c\u0431\u0430\u043b\u044a\u0442 \u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0435\u043d \u043d\u0430 \u043d\u0430\u0434\u0438\u0440) \u0438\u043b\u0438 \u0442\u0432\u044a\u0440\u0434\u0435 \u043c\u0430\u043b\u043a\u043e \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f. \u0410\u043a\u043e \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u0442\u0430 \u0432\u0438 \u0431\u044a\u0434\u0430\u0442 \u043e\u0442\u0445\u0432\u044a\u0440\u043b\u0435\u043d\u0438, \u0449\u0435 \u0431\u044a\u0434\u0435\u0442\u0435 \u0443\u0432\u0435\u0434\u043e\u043c\u0435\u043d\u0438 \u0438 \u0449\u0435 \u0438\u043c\u0430\u0442\u0435 \u0432\u044a\u0437\u043c\u043e\u0436\u043d\u043e\u0441\u0442 \u0434\u0430 \u043f\u0440\u0435\u0437\u0430\u0441\u043d\u0435\u043c\u0435\u0442\u0435 \u0432 \u0440\u0430\u043c\u043a\u0438\u0442\u0435 \u043d\u0430 48 \u0447\u0430\u0441\u0430.',
+    s3_next_btn: '\u041d\u0430\u043f\u0440\u0435\u0434: \u041a\u043e\u043d\u0442\u0440\u043e\u043b\u0435\u043d \u0441\u043f\u0438\u0441\u044a\u043a \u043f\u0440\u0435\u0434\u0438 \u043f\u043e\u043b\u0435\u0442',
+    btn_back: '\u041d\u0430\u0437\u0430\u0434',
+    s4_h2: '\u0412\u0430\u0448\u0438\u044f\u0442 \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u0435\u043d \u0441\u043f\u0438\u0441\u044a\u043a \u043f\u0440\u0435\u0434\u0438 \u043f\u043e\u043b\u0435\u0442',
+    s4_p: '\u041e\u0442\u0431\u0435\u043b\u0435\u0436\u0435\u0442\u0435 \u0432\u0441\u0438\u0447\u043a\u043e \u043f\u043e-\u0434\u043e\u043b\u0443, \u043f\u0440\u0435\u0434\u0438 \u0434\u0430 \u043f\u0440\u0438\u0435\u043c\u0435\u0442\u0435 \u043f\u044a\u0440\u0432\u0430\u0442\u0430 \u0441\u0438 \u043c\u0438\u0441\u0438\u044f. \u0429\u0435 \u0438\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u0442\u0435 \u0442\u043e\u0437\u0438 \u0441\u043f\u0438\u0441\u044a\u043a \u0438 \u043f\u0440\u0435\u0434\u0438 \u0432\u0441\u0435\u043a\u0438 \u0441\u043b\u0435\u0434\u0432\u0430\u0449 \u043f\u043e\u043b\u0435\u0442.',
+    c1_label: '\u0412\u0430\u043b\u0438\u0434\u0435\u043d \u043b\u0438\u0446\u0435\u043d\u0437 \u0437\u0430 \u0434\u0440\u043e\u043d (CAA)', c1_sub: '\u041e\u0442\u0432\u043e\u0440\u0435\u043d\u0430 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f A1/A2/A3 \u0438\u043b\u0438 \u0421\u043f\u0435\u0446\u0438\u0444\u0438\u0447\u043d\u0430 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f STS',
+    c2_label: '\u0414\u0440\u043e\u043d\u044a\u0442 \u0435 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u0430\u043d \u0432 CAA', c2_sub: '\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u043e\u043d\u043d\u0438\u044f\u0442 \u043d\u043e\u043c\u0435\u0440 \u0442\u0440\u044f\u0431\u0432\u0430 \u0434\u0430 \u0435 \u043e\u0431\u043e\u0437\u043d\u0430\u0447\u0435\u043d \u0432\u044a\u0440\u0445\u0443 \u0434\u0440\u043e\u043d\u0430',
+    c3_label: '\u0410\u043a\u0443\u043c\u0443\u043b\u0430\u0442\u043e\u0440\u044a\u0442 \u043d\u0430 \u0434\u0440\u043e\u043d\u0430 \u0435 \u043d\u0430\u043f\u044a\u043b\u043d\u043e \u0437\u0430\u0440\u0435\u0434\u0435\u043d', c3_sub: '\u041d\u043e\u0441\u0435\u0442\u0435 \u043f\u043e\u043d\u0435 \u0435\u0434\u043d\u0430 \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u0430 \u0431\u0430\u0442\u0435\u0440\u0438\u044f \u0437\u0430 \u043c\u0438\u0441\u0438\u044f',
+    c4_label: 'SD \u043a\u0430\u0440\u0442\u0430\u0442\u0430 \u0435 \u0444\u043e\u0440\u043c\u0430\u0442\u0438\u0440\u0430\u043d\u0430 \u0438 \u043f\u0440\u0430\u0437\u043d\u0430', c4_sub: '\u041f\u0440\u0435\u043f\u043e\u0440\u044a\u0447\u0432\u0430 \u0441\u0435 \u043d\u0430\u0439-\u043c\u0430\u043b\u043a\u043e 16GB \u0441\u0432\u043e\u0431\u043e\u0434\u043d\u043e \u043c\u044f\u0441\u0442\u043e',
+    c5_label: '\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438\u0442\u0435 \u043d\u0430 \u043a\u0430\u043c\u0435\u0440\u0430\u0442\u0430 \u0441\u0430 \u043f\u0440\u0430\u0432\u0438\u043b\u043d\u0438', c5_sub: '\u041f\u044a\u043b\u043d\u0430 \u0440\u0435\u0437\u043e\u043b\u044e\u0446\u0438\u044f JPEG, \u0433\u0438\u043c\u0431\u0430\u043b \u043d\u0430 90\u00b0 \u043d\u0430\u0434\u0438\u0440, \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u0430 \u0435\u043a\u0441\u043f\u043e\u0437\u0438\u0446\u0438\u044f',
+    c6_label: '\u041f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043e \u0432\u044a\u0437\u0434\u0443\u0448\u043d\u043e \u043f\u0440\u043e\u0441\u0442\u0440\u0430\u043d\u0441\u0442\u0432\u043e (canfly.io)', c6_sub: '\u041f\u043e\u0442\u0432\u044a\u0440\u0434\u0435\u0442\u0435, \u0447\u0435 \u043d\u044f\u043c\u0430 \u0430\u043a\u0442\u0438\u0432\u043d\u0438 \u0437\u0430\u0431\u0440\u0430\u043d\u0438 \u0437\u043e\u043d\u0438',
+    c7_label: '\u0412\u0440\u0435\u043c\u0435\u0442\u043e \u0435 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043e \u0438 \u043f\u043e\u0434\u0445\u043e\u0434\u044f\u0449\u043e', c7_sub: '\u0412\u044f\u0442\u044a\u0440 \u043f\u043e\u0434 10 m/s, \u0431\u0435\u0437 \u0434\u044a\u0436\u0434, \u0442\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u0430 \u043d\u0430\u0434 0\u00b0C',
+    c8_label: '\u041f\u043e\u0442\u0432\u044a\u0440\u0434\u0435\u043d \u0432\u0445\u043e\u0434 \u0432 \u0442\u0430\u0431\u043b\u043e\u0442\u043e \u0437\u0430 \u043f\u0438\u043b\u043e\u0442\u0438', c8_sub: '\u0422\u0435\u0441\u0442\u0432\u0430\u0439\u0442\u0435 \u0432\u0445\u043e\u0434\u0430 \u043d\u0430 pilot-login.html \u043f\u0440\u0435\u0434\u0438 \u043f\u044a\u0440\u0432\u0430\u0442\u0430 \u0441\u0438 \u043c\u0438\u0441\u0438\u044f',
+    c9_label: '\u0422\u0435\u0441\u0442\u0432\u0430\u043d\u0430 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430 \u0437\u0430 \u043a\u0430\u0447\u0432\u0430\u043d\u0435 \u043d\u0430 \u043c\u0438\u0441\u0438\u044f', c9_sub: '\u041f\u043e\u0442\u0432\u044a\u0440\u0434\u0435\u0442\u0435, \u0447\u0435 \u043c\u043e\u0436\u0435\u0442\u0435 \u0434\u0430 \u0434\u043e\u0441\u0442\u044a\u043f\u0438\u0442\u0435 \u0434\u043e upload-mission.html \u0438 \u0434\u0430 \u0432\u0438\u0434\u0438\u0442\u0435 \u0444\u043e\u0440\u043c\u0430\u0442\u0430 \u0437\u0430 \u043a\u0430\u0447\u0432\u0430\u043d\u0435',
+    c10_label: '\u0417\u0430\u043f\u0430\u0437\u0435\u043d \u043a\u043e\u043d\u0442\u0430\u043a\u0442 \u0437\u0430 \u0438\u0437\u0432\u044a\u043d\u0440\u0435\u0434\u043d\u0438 \u0441\u043b\u0443\u0447\u0430\u0438', c10_sub: '\u0417\u0430\u043f\u0430\u0437\u0435\u0442\u0435 info@sunlytics.bg \u0438 +359 88 000 0000 \u0432 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0430 \u0441\u0438',
+    progress_initial: '0 \u043e\u0442 10 \u0437\u0430\u0432\u044a\u0440\u0448\u0435\u043d\u0438', progress_of: ' \u043e\u0442 ', progress_completed: ' \u0437\u0430\u0432\u044a\u0440\u0448\u0435\u043d\u0438',
+    checklist_done: '\u0413\u043e\u0442\u043e\u0432\u043e, \u0441\u043b\u0435\u0434\u0432\u0430\u0449\u0430 \u0441\u0442\u044a\u043f\u043a\u0430', checklist_incomplete: '\u0417\u0430\u0432\u044a\u0440\u0448\u0435\u0442\u0435 \u0432\u0441\u0438\u0447\u043a\u0438 \u0442\u043e\u0447\u043a\u0438',
+    s5_h2: '\u041f\u043e\u0442\u0432\u044a\u0440\u0434\u0435\u0442\u0435 \u0441\u0432\u043e\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u0438',
+    s5_p: '\u041f\u0440\u043e\u0432\u0435\u0440\u0435\u0442\u0435 \u0434\u0430\u043b\u0438 \u0442\u0435\u0437\u0438 \u0434\u0430\u043d\u043d\u0438 \u0441\u0430 \u0432\u0435\u0440\u043d\u0438. \u041f\u043b\u0430\u0449\u0430\u043d\u0435\u0442\u043e \u0432\u0438 \u0449\u0435 \u0431\u044a\u0434\u0435 \u0438\u0437\u043f\u0440\u0430\u0442\u0435\u043d\u043e \u043a\u044a\u043c \u043f\u043e\u0441\u043e\u0447\u0435\u043d\u0430\u0442\u0430 \u0442\u0443\u043a \u0441\u043c\u0435\u0442\u043a\u0430.',
+    lbl_first: '\u0418\u043c\u0435', lbl_last: '\u0424\u0430\u043c\u0438\u043b\u0438\u044f', lbl_phone: '\u0422\u0435\u043b\u0435\u0444\u043e\u043d\u0435\u043d \u043d\u043e\u043c\u0435\u0440', lbl_payment: '\u041f\u0440\u0435\u0434\u043f\u043e\u0447\u0438\u0442\u0430\u043d \u043c\u0435\u0442\u043e\u0434 \u043d\u0430 \u043f\u043b\u0430\u0449\u0430\u043d\u0435',
+    opt_select: '\u0418\u0437\u0431\u0435\u0440\u0435\u0442\u0435 \u043c\u0435\u0442\u043e\u0434', opt_bank: '\u0411\u0430\u043d\u043a\u043e\u0432 \u043f\u0440\u0435\u0432\u043e\u0434 (IBAN)', opt_revolut: 'Revolut',
+    lbl_iban: 'IBAN', lbl_revolut: 'Revolut \u0442\u0435\u043b\u0435\u0444\u043e\u043d \u0438\u043b\u0438 \u043f\u043e\u0442\u0440\u0435\u0431\u0438\u0442\u0435\u043b\u0441\u043a\u043e \u0438\u043c\u0435', lbl_drone: '\u041c\u043e\u0434\u0435\u043b \u0434\u0440\u043e\u043d', lbl_license: '\u041d\u043e\u043c\u0435\u0440 \u043d\u0430 \u043b\u0438\u0446\u0435\u043d\u0437 (CAA)',
+    finish_btn: '\u0417\u0430\u0432\u044a\u0440\u0448\u0435\u0442\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0442\u0430',
+    err_fill: '\u041c\u043e\u043b\u044f, \u043f\u043e\u043f\u044a\u043b\u043d\u0435\u0442\u0435 \u0432\u0441\u0438\u0447\u043a\u0438 \u043f\u043e\u043b\u0435\u0442\u0430, \u043f\u0440\u0435\u0434\u0438 \u0434\u0430 \u0437\u0430\u0432\u044a\u0440\u0448\u0438\u0442\u0435.', saving: '\u0417\u0430\u043f\u0430\u0437\u0432\u0430\u043d\u0435...',
+    done_h2: '\u0413\u043e\u0442\u043e\u0432\u0438 \u0441\u0442\u0435 \u0437\u0430 \u043f\u043e\u043b\u0435\u0442.',
+    done_p: '\u041f\u0440\u043e\u0444\u0438\u043b\u044a\u0442 \u0432\u0438 \u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0435\u043d \u0438 \u0432\u0435\u0447\u0435 \u0441\u0442\u0435 \u0430\u043a\u0442\u0438\u0432\u043d\u0438 \u0432 \u043c\u0440\u0435\u0436\u0430\u0442\u0430 \u043e\u0442 \u043f\u0438\u043b\u043e\u0442\u0438 \u043d\u0430 Sunlytics. \u0423\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u0435\u0442\u043e \u0437\u0430 \u043f\u044a\u0440\u0432\u0430\u0442\u0430 \u0432\u0438 \u043c\u0438\u0441\u0438\u044f \u043c\u043e\u0436\u0435 \u0434\u0430 \u043f\u0440\u0438\u0441\u0442\u0438\u0433\u043d\u0435 \u0432\u0441\u044f\u043a\u043e \u0432\u0440\u0435\u043c\u0435.',
+    done_dashboard_btn: '\u041e\u0442\u0438\u0434\u0435\u0442\u0435 \u0432 \u0442\u0430\u0431\u043b\u043e\u0442\u043e \u0437\u0430 \u043f\u0438\u043b\u043e\u0442\u0438',
+    done_questions_p: '\u0412\u044a\u043f\u0440\u043e\u0441\u0438? \u041f\u0438\u0448\u0435\u0442\u0435 \u043d\u0438 \u043d\u0430 <a href="mailto:info@sunlytics.bg" style="color:var(--orange-dark);">info@sunlytics.bg</a>',
+  }
+};
+let lang = localStorage.getItem('lang') || 'en';
+function t(k) { return (T[lang] && T[lang][k]) || k; }
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('lang', l);
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (T[l][k] !== undefined) el.innerHTML = T[l][k];
+  });
+  document.getElementById('langEN').classList.toggle('active', l === 'en');
+  document.getElementById('langEN').setAttribute('aria-pressed', l === 'en');
+  document.getElementById('langBG').classList.toggle('active', l === 'bg');
+  document.getElementById('langBG').setAttribute('aria-pressed', l === 'bg');
+  updateCheckProgress();
+}
+
+let currentStep = 0;
+const TOTAL_STEPS = 6;
+
+function updateProgress() {
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById('prog' + i);
+    el.classList.remove('done', 'active');
+    if (i < currentStep) el.classList.add('done');
+    else if (i === currentStep) el.classList.add('active');
+    const dot = el.querySelector('.prog-dot');
+    if (i < currentStep) {
+      dot.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else {
+      dot.textContent = i + 1;
+    }
+  }
+}
+
+function nextStep() {
+  if (currentStep < TOTAL_STEPS - 1) {
+    document.getElementById('step' + currentStep).classList.remove('active');
+    currentStep++;
+    document.getElementById('step' + currentStep).classList.add('active');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    document.getElementById('step' + currentStep).classList.remove('active');
+    currentStep--;
+    document.getElementById('step' + currentStep).classList.add('active');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// Checklist logic
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  const svg = el.querySelector('.check-box svg');
+  svg.style.display = el.classList.contains('checked') ? 'block' : 'none';
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  const items = document.querySelectorAll('.check-item');
+  const done = document.querySelectorAll('.check-item.checked').length;
+  document.getElementById('checkProgress').textContent = done + t('progress_of') + items.length + t('progress_completed');
+  const btn = document.getElementById('checklistNextBtn');
+  if (done === items.length) {
+    btn.disabled = false;
+    btn.innerHTML = t('checklist_done') + ' <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>';
+  } else {
+    btn.disabled = true;
+    btn.textContent = t('checklist_incomplete');
+  }
+}
+
+// Payment method toggle
+document.getElementById('pPayment').addEventListener('change', function() {
+  document.getElementById('ibanGroup').style.display = this.value === 'bank' ? 'block' : 'none';
+  document.getElementById('revolutGroup').style.display = this.value === 'revolut' ? 'block' : 'none';
+});
+
+async function finishOnboarding() {
+  const first   = document.getElementById('pFirstName').value.trim();
+  const last    = document.getElementById('pLastName').value.trim();
+  const phone   = document.getElementById('pPhone').value.trim();
+  const payment = document.getElementById('pPayment').value;
+  const drone   = document.getElementById('pDrone').value.trim();
+  const license = document.getElementById('pLicense').value.trim();
+
+  const errEl = document.getElementById('profileErr');
+  errEl.style.display = 'none';
+
+  if (!first || !last || !phone || !payment || !drone || !license) {
+    errEl.textContent = t('err_fill');
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('finishBtn');
+  btn.disabled = true;
+  btn.textContent = t('saving');
+
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      await sb.from('pilots').update({
+        first_name: first,
+        last_name: last,
+        phone: '+359 ' + phone,
+        drone_model: drone,
+        license_number: license,
+        payment_method: payment,
+        onboarded: true,
+      }).eq('email', user.email);
+    }
+  } catch (e) {
+    // Non-blocking: proceed to success even if DB update fails
+    console.warn('Profile save error:', e);
+  }
+
+  nextStep();
+}
+
+// Apply saved language preference on load
+setLang(lang);
+</script>
+</body>
+</html>
