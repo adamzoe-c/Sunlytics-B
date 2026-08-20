@@ -256,6 +256,23 @@
             flex-wrap: wrap;
         }
 
+        .founder-image {
+            flex: 0 0 260px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            border: 4px solid #ffffff;
+        }
+
+        .founder-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
         .founder-info { flex: 1; min-width: 280px; }
 
         .founder-tag {
@@ -291,7 +308,7 @@
             color: var(--gray);
             line-height: 1.85;
             margin-bottom: 16px;
-            text-align: left;
+            text-align: justify;
         }
 
         .founder-badges {
@@ -417,6 +434,7 @@
             color: var(--gray);
             line-height: 1.8;
             font-size: 14px;
+            text-align: justify;
         }
 
         /* ── MISSION BANNER ── */
@@ -557,9 +575,10 @@
                 z-index: 199;
             }
 
-            .founder-inner { flex-direction: column; align-items: center; text-align: center; }
-            .founder-info p { text-align: left; }
-            .founder-badges { justify-content: center; gap: 7px; }
+            .founder-inner { flex-direction: column; align-items: flex-start; text-align: left; }
+            .founder-image { align-self: center; width: 180px; height: 180px; flex-basis: 180px; }
+            .founder-info p { text-align: justify; }
+            .founder-badges { justify-content: flex-start; gap: 7px; }
             .founder-badge { font-size: 11.5px; padding: 6px 12px; }
             .story-card { width: 100%; max-width: 360px; }
             .footer-top { flex-direction: column; }
@@ -609,18 +628,21 @@
 <!-- FOUNDER -->
 <section class="founder-section">
     <div class="founder-inner">
+        <div class="founder-image">
+            <img src="zoe.jpg" alt="Zubyda Adam, Founder of Sunlytics">
+        </div>
         <div class="founder-info">
             <div class="founder-tag" data-i18n="founder_tag">Founder</div>
-            <h2 data-i18n="founder_h2">The Person Behind Sunlytics</h2>
+            <h2 data-i18n="founder_h2">Zubyda Adam</h2>
             <div class="founder-title" data-i18n="founder_title">Founder &amp; Developer</div>
-            <p data-i18n="founder_p1">Sunlytics was founded by a self-taught developer with a background in healthcare, someone who understands both data-driven decision making and the importance of clear, reliable information.</p>
-            <p data-i18n="founder_p2">Discovering that reliable commercial roof assessments still required weeks of waiting and expensive engineer visits sparked the idea that became Sunlytics: an independent way to identify and verify commercial solar opportunities, using satellite data, AI analysis and certified drone operators, then put them directly in front of the installers who can act on them.</p>
+            <p data-i18n="founder_p1">I'm a registered nurse with a Bachelor's degree in Nursing and over six years of clinical experience. I was displaced from Sudan by the war and rebuilt my life in Egypt, where I spent the past three years teaching myself software development.</p>
+            <p data-i18n="founder_p2">The idea for Sunlytics came from reading about someone's experience with a solar company that pressured them into a purchase without giving them honest, independent information about their own roof. That lack of transparency stuck with me. I built Sunlytics so that people could get accurate, independent data about their solar potential first, and only then decide whether and who to buy from, without a salesperson standing over the numbers. In a way, it's the same principle I learned in nursing: an X-ray tells you what's actually going on before anyone recommends treatment. It doesn't replace the doctor, it just makes sure the diagnosis comes before the sale. Sunlytics works the same way for your roof, it doesn't replace the solar company, it just makes sure you have the real picture before you talk to one.</p>
             <div class="founder-badges">
                 <div class="founder-badge">
-                    <span style="width:15px;height:15px;display:inline-block;vertical-align:middle;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span> <span data-i18n="badge1">Self-taught Developer</span>
+                    <span style="width:15px;height:15px;display:inline-block;vertical-align:middle;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span> <span data-i18n="badge1">Self-Taught Developer, 3+ Years</span>
                 </div>
                 <div class="founder-badge">
-                    <span style="width:15px;height:15px;display:inline-block;vertical-align:middle;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span> <span data-i18n="badge2">Healthcare Background</span>
+                    <span style="width:15px;height:15px;display:inline-block;vertical-align:middle;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span> <span data-i18n="badge2">Registered Nurse, 6+ Years</span>
                 </div>
                 <div class="founder-badge">
                     <span style="width:15px;height:15px;display:inline-block;vertical-align:middle;flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M12 2v2"/><path d="M12 20v2"/></svg></span> <span data-i18n="badge3">Solar Tech Founder</span>
@@ -704,7 +726,7 @@
     <div class="footer-bottom" style="flex-direction:column; align-items:center; text-align:center; gap:8px;">
         <p data-i18n="footer_copy">&copy; 2026 Sunlytics. All rights reserved.</p>
         <p style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap; margin:0;"><a href="privacy.html" style="color:var(--orange-dark); text-decoration:none; font-size:13px;">Privacy Policy</a> <span style="opacity:0.4; color:#666;">·</span> <a href="terms.html" style="color:var(--orange-dark); text-decoration:none; font-size:13px;">Terms of Service</a> <span style="opacity:0.4; color:#666;">·</span> <a href="admin-dashboard.html" style="color:rgba(30,30,30,0.25); text-decoration:none; font-size:11px;">Admin</a></p>
-        <p style="margin:6px 0 0; font-size:11px; color:rgba(30,30,30,0.35); text-align:center; width:100%;">Sunlytics EOOD &middot; EIK 206789123 &middot; VAT BG206789123 &middot; ul. Vitosha 1, 1000 Sofia</p>
+        <p style="margin:6px 0 0; font-size:11px; color:rgba(30,30,30,0.35); text-align:center; width:100%;">Sunlytics EOOD &middot; EIK 206789123 &middot; VAT BG864213907 &middot; ul. Vitosha 89, 1000 Sofia</p>
     </div>
 </footer>
 
@@ -758,12 +780,12 @@ function sunlyticsCookieConsent(accepted) {
             hero_h1: 'Built to Make Solar <span>Simple</span>',
             hero_p: "We help solar installers in Bulgaria find and pursue high-potential commercial roofs, warehouses, factories, distribution centres and large retail buildings, backed by an independent, professional survey instead of a cold introduction.",
             founder_tag: "Founder",
-            founder_h2: "The Person Behind Sunlytics",
+            founder_h2: "Zubyda Adam",
             founder_title: "Founder &amp; Developer",
-            founder_p1: "Sunlytics was founded by a self-taught developer with a background in healthcare, someone who understands both data-driven decision making and the importance of clear, reliable information.",
-            founder_p2: "Discovering that reliable commercial roof assessments still required weeks of waiting and expensive engineer visits sparked the idea that became Sunlytics: an independent way to identify and verify commercial solar opportunities, using satellite data, AI analysis and certified drone operators, then put them directly in front of the installers who can act on them.",
-            badge1: "Self-taught Developer",
-            badge2: "Healthcare Background",
+            founder_p1: "I'm a registered nurse with a Bachelor's degree in Nursing and over six years of clinical experience. I was displaced from Sudan by the war and rebuilt my life in Egypt, where I spent the past three years teaching myself software development.",
+            founder_p2: "The idea for Sunlytics came from reading about someone's experience with a solar company that pressured them into a purchase without giving them honest, independent information about their own roof. That lack of transparency stuck with me. I built Sunlytics so that people could get accurate, independent data about their solar potential first, and only then decide whether and who to buy from, without a salesperson standing over the numbers. In a way, it's the same principle I learned in nursing: an X-ray tells you what's actually going on before anyone recommends treatment. It doesn't replace the doctor, it just makes sure the diagnosis comes before the sale. Sunlytics works the same way for your roof, it doesn't replace the solar company, it just makes sure you have the real picture before you talk to one.",
+            badge1: "Self-Taught Developer, 3+ Years",
+            badge2: "Registered Nurse, 6+ Years",
             badge3: "Solar Tech Founder",
             story_tag: "Our Foundation",
             story_title: 'Story, Team &amp; <span>Mission</span>',
@@ -791,12 +813,12 @@ function sunlyticsCookieConsent(accepted) {
             hero_h1: 'Създадени, за да направим слънчевата енергия <span>лесна</span>',
             hero_p: "Помагаме на монтажници на слънчеви системи в България да намират и преследват търговски покриви с висок потенциал — складове, фабрики, логистични центрове и големи търговски обекти, — подкрепени от независим, професионален оглед, а не от студено представяне.",
             founder_tag: "Основател",
-            founder_h2: "Човекът зад Sunlytics",
+            founder_h2: "Zubyda Adam",
             founder_title: "Основател и разработчик",
-            founder_p1: "Sunlytics е основана от самоук разработчик със здравен опит — човек, който разбира както вземането на решения въз основа на данни, така и значението на ясната и надеждна информация.",
-            founder_p2: "Откритието, че надеждните оценки на търговски покриви все още изискват седмици чакане и скъпи посещения на инженери, породи идеята, от която се роди Sunlytics: независим начин за откриване и потвърждаване на търговски възможности за слънчева енергия, използвайки сателитни данни, изкуствен интелект и сертифицирани оператори на дронове, а след това представяне директно на монтажниците, които могат да действат по тях.",
-            badge1: "Самоук разработчик",
-            badge2: "Опит в здравеопазването",
+            founder_p1: "Аз съм медицинска сестра с бакалавърска степен по здравни грижи и над шест години клиничен опит. Бях принудена да напусна Судан заради войната и изградих нов живот в Египет, където през последните три години се самообучавах в софтуерна разработка.",
+            founder_p2: "Идеята за Sunlytics се роди, докато четях за случая на човек, притиснат от соларна компания да купи система, без да получи честна, независима информация за собствения си покрив. Тази липса на прозрачност ме впечатли дълбоко. Затова създадох Sunlytics — за да могат хората първо да получат точни, независими данни за своя соларен потенциал, а едва след това да решат дали и от кого да купят, без натиск от продавач над цифрите. В известен смисъл това е същият принцип, който научих в сестринството: рентгеновата снимка показва какво реално се случва, преди някой да предложи лечение. Тя не замества лекаря, а само гарантира, че диагнозата идва преди продажбата. Sunlytics работи по същия начин за вашия покрив — не замества соларната компания, а гарантира, че имате реалната картина, преди да говорите с нея.",
+            badge1: "Самоук разработчик, 3+ години",
+            badge2: "Медицинска сестра, 6+ години",
             badge3: "Основател на слънчева технология",
             story_tag: "Нашата основа",
             story_title: 'История, екип и <span>мисия</span>',
