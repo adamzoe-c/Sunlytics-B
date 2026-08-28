@@ -1061,17 +1061,21 @@
         }
 
         .hero-map-text {
-            color: #1a1a1a;
-            padding-bottom: 56px;
+            color: #ffffff;
+            padding: 56px 32px;
+            border-radius: 24px;
+            background-image: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.65)), url('Solar.jpg');
+            background-size: cover;
+            background-position: center;
         }
 
         .hero-map-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(247,151,30,0.1);
-            border: 1px solid rgba(247,151,30,0.3);
-            color: #c45000;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: #ffffff;
             padding: 7px 16px;
             border-radius: 50px;
             font-size: 12px;
@@ -1079,6 +1083,7 @@
             letter-spacing: 0.5px;
             margin-bottom: 24px;
             white-space: nowrap;
+            backdrop-filter: blur(6px);
         }
 
         .hero-map-text h1 {
@@ -1097,7 +1102,7 @@
 
         .hero-map-text p {
             font-size: 16px;
-            color: #6b7280;
+            color: rgba(255,255,255,0.92);
             line-height: 1.7;
             margin-bottom: 32px;
             max-width: 440px;
@@ -1322,13 +1327,14 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            background: #f5f5f5;
-            border: 1px solid #e8e8e8;
-            color: #374151;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: #ffffff;
             padding: 6px 14px;
             border-radius: 50px;
             font-size: 12px;
             font-weight: 500;
+            backdrop-filter: blur(6px);
         }
 
         /* Leaflet custom marker */
@@ -1431,7 +1437,7 @@
             <p data-i18n="hero_p">Get a clear, independent picture of your roof's solar potential before speaking to any installer. Free satellite analysis in 60 seconds. Full drone report in 24 hours.</p>
             <div class="map-trust-pills">
                 <div class="map-trust-pill">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     GDPR compliant
                 </div>
                 <div class="map-trust-pill">
@@ -1447,7 +1453,6 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
                 See How It Works
             </a>
-            <img src="Solar.jpg" alt="Solar panels on a Bulgarian rooftop" style="width:100%;max-width:520px;border-radius:20px;margin-top:32px;display:block;box-shadow:0 10px 30px rgba(0,0,0,0.12);">
         </div>
 
         <!-- Right: map card -->
